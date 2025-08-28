@@ -12,7 +12,7 @@ Módulos e bibliotecas utilizadas
 # flask_sqlalchemy 
 # flask_login
 
-Como baixar - pip install flask flask_sqlalchemy flask_login
+Como baixar - pip install -r requierments.txt
 
 # Exemplos de uso -
 
