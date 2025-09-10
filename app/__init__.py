@@ -7,9 +7,9 @@ db = SQLAlchemy()
 login_manager = LoginManager()  
 login_manager.login_view = 'auth.login'
 login_manager.login_message = "Login necessário para acessar esta página!"
-login_manager.login_message_category = "info"  # Para Bootstrap alerts
+login_manager.login_message_category = "info"  
 
-def create_app():  # Mudando nome da função
+def create_app():  
     app = Flask(__name__)
     
     # Configurações

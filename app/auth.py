@@ -63,7 +63,7 @@ def login():
         # Redireciona para página solicitada ou dashboard
         next_page = request.args.get('next')
         if not next_page or urlparse(next_page).netloc != '':
-            next_page = url_for('main.dashboard')  # Você criará essa rota
+            next_page = url_for('main.dashboard')  
         
         flash('Login realizado com sucesso!', 'success')
         return redirect(next_page)
@@ -187,10 +187,13 @@ def admin_required(f):
         if not current_user.is_authenticated:
             return redirect(url_for('auth.login'))
         
-        # Aqui você pode adicionar lógica de roles
-        # if not current_user.is_admin:
-        #     flash('Acesso negado', 'error')
-        #     return redirect(url_for('main.index'))
+        if not current_user.is_admin:
+            flash('Acesso negado', 'error')
+            return redirect(url_for('main.index'))
+        
+        if not current_user.is_active:
+            flash('Conta desativada', 'error')
+            return redirect(url_for('auth.login'))
         
         return f(*args, **kwargs)
     return decorated_function
