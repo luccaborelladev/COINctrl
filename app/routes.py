@@ -1,3 +1,4 @@
+from flask import Blueprint, render_template
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
 from datetime import datetime, date
@@ -5,6 +6,15 @@ from . import db
 from .models import User, Category, Transaction, Budget, Goal
 
 main_blueprint = Blueprint('main', __name__)
+routes = Blueprint("routes", __name__)
+
+@routes.route("/")
+def welcome():
+    return render_template("index.html")
+
+@routes.route("/login")
+def login():
+    return render_template("login.html")
 
 @main_blueprint.route('/')
 def index():

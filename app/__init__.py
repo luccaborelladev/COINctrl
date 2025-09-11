@@ -1,4 +1,6 @@
 from flask import Flask
+from .routes import routes
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 import os
@@ -42,3 +44,8 @@ def create_app():
 # Mantém função original para compatibilidade
 def setup_flask_app():
     return create_app()
+
+def create_app():
+    app = Flask(__name__)
+    app.register_blueprint(routes)
+    return app
