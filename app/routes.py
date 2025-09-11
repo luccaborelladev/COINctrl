@@ -2,7 +2,6 @@ from flask import Blueprint, render_template
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
 from datetime import datetime, date
-from . import db
 from .models import User, Category, Transaction, Budget, Goal
 
 main_blueprint = Blueprint('main', __name__)
@@ -26,6 +25,7 @@ def index():
 @main_blueprint.route('/dashboard')
 @login_required
 def dashboard():
+    from . import db
     """Dashboard principal"""
     # Dados resumidos para o dashboard
     recent_transactions = Transaction.query.filter_by(user_id=current_user.id)\

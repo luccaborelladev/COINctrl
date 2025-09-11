@@ -4,15 +4,16 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 import os
-
-db = SQLAlchemy()
-login_manager = LoginManager()  
-login_manager.login_view = 'auth.login'
-login_manager.login_message = "Login necessário para acessar esta página!"
-login_manager.login_message_category = "info"  
+from .models import db, login_manager
 
 def create_app():  
     app = Flask(__name__)
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///labsoftware.db'  # Exemplo usando SQLite
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    db.init_app(app)
+    login_manager.init_app(app)
+    # ...restante da configuração...
+    return app
     
     # Configurações
     app.config['SECRET_KEY'] = os.getenv("SECRET_KEY", default="devkey-change-in-production")
@@ -47,5 +48,8 @@ def setup_flask_app():
 
 def create_app():
     app = Flask(__name__)
-    app.register_blueprint(routes)
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///labsoftware.db'  # Exemplo usando SQLite
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    db.init_app(app)
+    login_manager.init_app(app)
     return app

@@ -1,8 +1,11 @@
-from . import db, login_manager
-from flask_login import UserMixin
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from decimal import Decimal
+
+db = SQLAlchemy()
+login_manager = LoginManager()
 
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
