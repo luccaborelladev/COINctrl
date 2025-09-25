@@ -1,11 +1,11 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from urllib.parse import urlparse
-from . import db
+from app import db
 from app.models import User
 import re
 
-auth_routes = Blueprint("auth", __name__)
+auth_bp = Blueprint("auth", __name__)
 
 def validate_password(password):
     """Valida se a senha atende aos critérios de segurança"""
@@ -28,7 +28,7 @@ def validate_email(email):
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     return re.match(pattern, email) is not None
 
-@auth_routes.route("/login", methods=['GET', 'POST'])
+@auth_bp.route("/login", methods=['GET', 'POST'])
 def login():
     """Rota de login"""
     if current_user.is_authenticated:
@@ -70,7 +70,7 @@ def login():
     
     return render_template('auth/login.html')
 
-@auth_routes.route("/register", methods=['GET', 'POST'])
+@auth_bp.route("/register", methods=['GET', 'POST'])
 def register():
     """Rota de registro"""
     if current_user.is_authenticated:
@@ -131,7 +131,7 @@ def register():
     
     return render_template('auth/register.html')
 
-@auth_routes.route("/logout")
+@auth_bp.route("/logout")
 @login_required
 def logout():
     """Rota de logout"""
@@ -139,13 +139,13 @@ def logout():
     flash('Logout realizado com sucesso', 'success')
     return redirect(url_for('main.index'))
 
-@auth_routes.route("/profile")
+@auth_bp.route("/profile")
 @login_required
 def profile():
     """Página de perfil do usuário"""
     return render_template('auth/profile.html', user=current_user)
 
-@auth_routes.route("/change_password", methods=['GET', 'POST'])
+@auth_bp.route("/change_password", methods=['GET', 'POST'])
 @login_required
 def change_password():
     """Alterar senha"""

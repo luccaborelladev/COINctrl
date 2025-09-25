@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if title %}{{ title }} - {% endif %}COINctrl</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <a href="{{ url_for('main.index') }}">
+                    <i class="fas fa-coins"></i>
+                    COINctrl
+                </a>
+            </div>
+            
+            {% if current_user.is_authenticated %}
+            <div class="nav-menu">
+                <a href="{{ url_for('main.dashboard') }}" class="nav-link">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+                <a href="{{ url_for('transactions.add_transaction') }}" class="nav-link">
+                    <i class="fas fa-plus"></i> Nova Transação
+                </a>
+                <a href="{{ url_for('categories.list_categories') }}" class="nav-link">
+                    <i class="fas fa-tags"></i> Categorias
+                </a>
+                <a href="{{ url_for('auth.logout') }}" class="nav-link logout">
+                    <i class="fas fa-sign-out-alt"></i> Sair
+                </a>
+            </div>
+            {% else %}
+            <div class="nav-menu">
+                <a href="{{ url_for('auth.login') }}" class="nav-link">
+                    <i class="fas fa-sign-in-alt"></i> Entrar
+                </a>
+                <a href="{{ url_for('auth.register') }}" class="nav-link">
+                    <i class="fas fa-user-plus"></i> Cadastrar
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            <i class="fas fa-info-circle"></i>
+                            {{ message }}
+                            <button class="alert-close" onclick="this.parentElement.remove()">×</button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2024 COINctrl - Controle Financeiro Pessoal</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

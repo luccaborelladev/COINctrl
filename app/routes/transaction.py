@@ -5,6 +5,7 @@ from app.models import User # Importa o modelo User
 from app import db # Importa a instância do banco de dados
 
 auth_bp = Blueprint('auth', __name__)
+transactions_bp = Blueprint("transactions", __name__)
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
