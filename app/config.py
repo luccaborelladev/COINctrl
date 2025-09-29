@@ -1,44 +1,34 @@
-# app/config.py
 import os
+import json
 from datetime import timedelta
 
-basedir = os.path.abspath(os.path.dirname(__file__))
-
 class Config:
-    """Configuração base"""
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'sua-chave-secreta-super-forte-aqui-2024'
+    # Configurações básicas
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///coinctrl.db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_RECORD_QUERIES = True
-    
-    # Configurações de sessão
     PERMANENT_SESSION_LIFETIME = timedelta(hours=24)
     
+    # Configurações de segurança
+    MAX_LOGIN_ATTEMPTS = 5
+    LOCKOUT_DURATION = 30  # minutos
+    
+    # OAuth Google
     @staticmethod
-    def init_app(app):
-        pass
-
-class DevelopmentConfig(Config):
-    """Configuração para desenvolvimento"""
-    DEBUG = True
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URL') or \
-        'sqlite:///' + os.path.join(basedir, 'coinctrl_dev.db')
-
-class TestingConfig(Config):
-    """Configuração para testes"""
-    TESTING = True
-    SQLALCHEMY_DATABASE_URI = os.environ.get('TEST_DATABASE_URL') or \
-        'sqlite:///' + os.path.join(basedir, 'coinctrl_test.db')
-    WTF_CSRF_ENABLED = False
-
-class ProductionConfig(Config):
-    """Configuração para produção"""
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'sqlite:///' + os.path.join(basedir, 'coinctrl.db')
-
-# Dicionário de configurações
-config = {
-    'development': DevelopmentConfig,
-    'testing': TestingConfig,
-    'production': ProductionConfig,
-    'default': DevelopmentConfig
-}
+    def load_google_credentials():
+        """Carregar credenciais do Google OAuth"""
+        try:
+            with open('google_credentials.json', 'r') as f:
+                google_config = json.load(f)
+                return (
+                    google_config['web']['client_id'],
+                    google_config['web']['client_secret']
+                )
+        except FileNotFoundError:
+            print("⚠️ Arquivo google_credentials.json não encontrado.")
+            return None, None
+        except Exception as e:
+            print(f"❌ Erro ao carregar credenciais Google: {e}")
+            return None, None
+    
+    GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET = load_google_credentials()
