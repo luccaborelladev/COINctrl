@@ -1,25 +1,54 @@
-# LAB-DE-SOFTWARE-
-PROJETO ÍCARO
+# COINctrl - Controle Financeiro Pessoal
 
-# Nome do projeto - Sistema pessoal de controle financeiro. 
-*** Descrição *** - Nosso projeto tem a ideia de auxiliar usuários no gerenciamento das suas finanças diárias, permitindo ao usuário ter um controle simples e eficaz de suas despesas. Através do nosso projeto o usuário pode cadastrar entradas(receitas) e saídas(despesas), classificando cada transação por categoria.
+Sistema de controle financeiro pessoal desenvolvido com Flask.
 
-# Como instalar - Abrir um documento local, depois ir ao terminal e escrever git pull https://github.com/luccaborelladev/LAB-DE-SOFTWARE-.git
+## Funcionalidades Implementadas
 
-Módulos e bibliotecas utilizadas 
+### ✅ Sistema de Autenticação
+- **Cadastro de usuários** com validação completa
+- **Login/Logout** seguro com gerenciamento de sessão
+- **OAuth 2.0 com Google** para login social
+- **Senhas criptografadas** com Werkzeug
+- **Validações de segurança** e proteção contra ataques básicos
 
-# flask  
-# flask_sqlalchemy 
-# flask_login
+## Tecnologias Utilizadas
 
-Como baixar - pip install -r requierments.txt
+- **Backend:** Flask 2.3.3
+- **Banco de Dados:** SQLite com SQLAlchemy
+- **Autenticação:** Flask-Login + Google OAuth 2.0
+- **Segurança:** Werkzeug (hashing), validações customizadas
+- **Frontend:** HTML5, CSS3 (responsivo)
 
-# Exemplos de uso -
+## Instalação e Execução
+```bash
+- 1. Clonar o repositório
 
-●	Permitir o cadastro de receitas e despesas com valor, data e categoria.
-●	Exibir o saldo atualizado com base nas movimentações.
-●	Gerar relatórios e gráficos para análise de gastos.
-●	Filtrar e pesquisar movimentações por período e categoria.
-●	Garantir armazenamento seguro e persistente das informações.
+git clone <url-do-repositorio>
+cd COINctrl 
 
+- 2. Configurar ambiente virtual
+python -m venv venv
 
+# Windows
+venv\Scripts\activate
+
+# Linux/Mac
+source venv/bin/activate
+
+- 3. Instalar dependências
+pip install -r requirements.txt
+
+- 4. Configurar OAuth Google (opcional)
+Criar projeto no 
+
+console.cloud.google.com
+Ativar Google+ API
+Criar credenciais OAuth 2.0
+Baixar JSON como google_credentials.json
+Adicionar URLs autorizadas:
+http://127.0.0.1:5000
+http://127.0.0.1:5000/auth/google/callback
+
+5. Executar aplicação
+
+python run.py
