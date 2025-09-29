@@ -1,43 +1,45 @@
 # app/routes/main.py
-from flask import Blueprint, render_template, redirect, url_for
-from flask_login import login_required, current_user
-from app.models import Transaction, Account # Importar modelos necessários
-from app import db # Importar a instância do banco de dados
+from flask import Blueprint
+from flask_login import current_user
 
 main_bp = Blueprint('main', __name__)
 
 @main_bp.route('/')
 def index():
-    if current_user.is_authenticated:
-        return redirect(url_for('main.dashboard'))
-    return render_template('index.html', title='Bem-vindo')
+    return '''
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>COINctrl - Teste</title>
+        <style>
+            body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+            .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; }
+            .btn { background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin: 5px; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>🪙 COINctrl</h1>
+            <p>Bem-vindo ao seu controle financeiro pessoal!</p>
+            <p><strong>Status:</strong> Aplicação funcionando! ✅</p>
+            
+            <div>
+                <a href="/auth/login" class="btn">Fazer Login</a>
+                <a href="/auth/register" class="btn">Cadastrar</a>
+                <a href="/test" class="btn" style="background: #28a745;">Página de Teste</a>
+            </div>
+            
+            <hr>
+            <small>Servidor Flask rodando em modo desenvolvimento</small>
+        </div>
+    </body>
+    </html>
+    '''
 
-@main_bp.route('/dashboard')
-@login_required
-def dashboard():
-    # Lógica para calcular o saldo e buscar transações recentes
-    # Exemplo básico:
-    total_income = db.session.query(db.func.sum(Transaction.amount)).filter_by(
-        user_id=current_user.id, type='income'
-    ).scalar() or 0
-
-    total_expenses = db.session.query(db.func.sum(Transaction.amount)).filter_by(
-        user_id=current_user.id, type='expense'
-    ).scalar() or 0
-    
-    current_balance = total_income - total_expenses
-
-    recent_transactions = Transaction.query.filter_by(user_id=current_user.id)\
-                                    .order_by(Transaction.date.desc())\
-                                    .limit(5).all()
-
-    return render_template(
-        'dashboard.html', 
-        title='Dashboard', 
-        balance=current_balance,
-        recent_transactions=recent_transactions
-    )
-
-# Você precisará criar os arquivos HTML correspondentes em app/templates/
-# - index.html
-# - dashboard.html
+@main_bp.route('/test')
+def test():
+    return '''
+    <h1>✅ Teste Funcionando!</h1>
+    <p>O Flask está rodando corretamente.</p>
+    <p><a href="/">← Voltar para a página inicial</a></p>
+    '''
