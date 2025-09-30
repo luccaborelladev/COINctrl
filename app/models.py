@@ -75,3 +75,121 @@ class User(UserMixin, db.Model):
     
     def __repr__(self):
         return f'<User {self.email}>'
+
+from decimal import Decimal
+from enum import Enum
+
+class TransactionType(Enum):
+    """Enum para tipos de transação"""
+    RECEITA = "receita"
+    DESPESA = "despesa"
+
+class Category(db.Model):
+    """Modelo para categorias financeiras"""
+    __tablename__ = 'categories'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    color = db.Column(db.String(7), default='#007bff')  # Cor hexadecimal
+    icon = db.Column(db.String(50), default='💰')  # Emoji ou classe de ícone
+    transaction_type = db.Column(db.Enum(TransactionType), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relacionamentos
+    user = db.relationship('User', backref=db.backref('categories', lazy=True))
+    transactions = db.relationship('Transaction', backref='category', lazy=True, cascade='all, delete-orphan')
+    
+    def __repr__(self):
+        return f'<Category {self.name}>'
+    
+    def to_dict(self):
+        """Converter para dicionário"""
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'color': self.color,
+            'icon': self.icon,
+            'transaction_type': self.transaction_type.value,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
+class Transaction(db.Model):
+    """Modelo para transações financeiras (receitas e despesas)"""
+    __tablename__ = 'transactions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    description = db.Column(db.String(200), nullable=False)
+    amount = db.Column(db.Numeric(10, 2), nullable=False)  # Valor com 2 casas decimais
+    transaction_type = db.Column(db.Enum(TransactionType), nullable=False)
+    transaction_date = db.Column(db.Date, nullable=False, default=datetime.utcnow().date)
+    notes = db.Column(db.Text, nullable=True)
+    
+    # Chaves estrangeiras
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=False)
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relacionamentos
+    user = db.relationship('User', backref=db.backref('transactions', lazy=True))
+    
+    def __repr__(self):
+        return f'<Transaction {self.description} - R\$ {self.amount}>'
+    
+    def to_dict(self):
+        """Converter para dicionário"""
+        return {
+            'id': self.id,
+            'description': self.description,
+            'amount': float(self.amount),
+            'transaction_type': self.transaction_type.value,
+            'transaction_date': self.transaction_date.isoformat() if self.transaction_date else None,
+            'notes': self.notes,
+            'category': self.category.to_dict() if self.category else None,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+    
+    @property
+    def formatted_amount(self):
+        """Valor formatado em Real brasileiro"""
+        return f"R\$ {self.amount:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+    
+    @staticmethod
+    def get_balance_by_user(user_id):
+        """Calcular saldo total do usuário"""
+        receitas = db.session.query(db.func.sum(Transaction.amount)).filter_by(
+            user_id=user_id, 
+            transaction_type=TransactionType.RECEITA
+        ).scalar() or Decimal('0')
+        
+        despesas = db.session.query(db.func.sum(Transaction.amount)).filter_by(
+            user_id=user_id, 
+            transaction_type=TransactionType.DESPESA
+        ).scalar() or Decimal('0')
+        
+        return receitas - despesas
+    
+    @staticmethod
+    def get_totals_by_user(user_id):
+        """Obter totais de receitas e despesas"""
+        receitas = db.session.query(db.func.sum(Transaction.amount)).filter_by(
+            user_id=user_id, 
+            transaction_type=TransactionType.RECEITA
+        ).scalar() or Decimal('0')
+        
+        despesas = db.session.query(db.func.sum(Transaction.amount)).filter_by(
+            user_id=user_id, 
+            transaction_type=TransactionType.DESPESA
+        ).scalar() or Decimal('0')
+        
+        return {
+            'receitas': receitas,
+            'despesas': despesas,
+            'saldo': receitas - despesas
+        }

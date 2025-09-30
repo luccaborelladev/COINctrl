@@ -3,147 +3,211 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% if title %}{{ title }} - {% endif %}COINctrl</title>
+    <title>{% block title %}COINctrl{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
     <style>
         body { 
-            font-family: Arial, sans-serif; 
-            margin: 0; 
-            padding: 20px; 
-            background-color: #f5f5f5; 
-        }
-        .container { 
-            max-width: 1000px; 
-            margin: 0 auto; 
-            background: white; 
-            padding: 20px; 
-            border-radius: 8px; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
-        }
-        .nav { 
-            background: #333; 
-            color: white; 
-            padding: 15px; 
-            margin: -20px -20px 20px -20px; 
-            border-radius: 8px 8px 0 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .nav a { 
-            color: white; 
-            text-decoration: none; 
-            margin-right: 15px; 
-            padding: 8px 12px;
-            border-radius: 4px;
-            transition: background-color 0.3s;
-        }
-        .nav a:hover {
-            background-color: rgba(255,255,255,0.2);
-        }
-        .btn { 
-            background: #007bff; 
-            color: white; 
-            padding: 10px 20px; 
-            text-decoration: none; 
-            border-radius: 4px; 
-            display: inline-block; 
-            margin: 5px; 
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        .btn:hover {
-            background: #0056b3;
+            background: #f8f9fa; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
-        /* Flash Messages */
-        .flash-messages {
-            margin-bottom: 20px;
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
         }
-        .alert {
-            padding: 12px 15px;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            border-left: 4px solid;
-            position: relative;
-        }
-        .alert-success {
-            background-color: #d4edda;
-            color: #155724;
-            border-left-color: #28a745;
-        }
-        .alert-danger {
-            background-color: #f8d7da;
-            color: #721c24;
-            border-left-color: #dc3545;
-        }
-        .alert-warning {
-            background-color: #fff3cd;
-            color: #856404;
-            border-left-color: #ffc107;
-        }
-        .alert-info {
-            background-color: #d1ecf1;
-            color: #0c5460;
-            border-left-color: #17a2b8;
-        }
-        .alert-close {
-            position: absolute;
-            top: 8px;
-            right: 15px;
-            background: none;
+        
+        .card { 
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
             border: none;
-            font-size: 18px;
-            cursor: pointer;
-            color: inherit;
+            border-radius: 0.75rem;
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 0.75rem 0.75rem 0 0 !important;
+        }
+        
+        .btn {
+            border-radius: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .table {
+            background: white;
+            border-radius: 0.5rem;
+        }
+        
+        .alert {
+            border-radius: 0.5rem;
+            border: none;
+        }
+        
+        /* Sidebar responsiva */
+        .sidebar {
+            background: #343a40;
+            min-height: calc(100vh - 56px);
+        }
+        
+        .sidebar .nav-link {
+            color: #adb5bd;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            margin: 0.25rem;
+        }
+        
+        .sidebar .nav-link:hover {
+            background: #495057;
+            color: white;
+        }
+        
+        .sidebar .nav-link.active {
+            background: #007bff;
+            color: white;
+        }
+        
+        .main-content {
+            padding: 2rem;
+        }
+        
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Custom colors */
+        .text-receita { color: #28a745 !important; }
+        .text-despesa { color: #dc3545 !important; }
+        .bg-receita { background-color: #28a745 !important; }
+        .bg-despesa { background-color: #dc3545 !important; }
+        
+        /* Mobile adjustments */
+        @media (max-width: 768px) {
+            .main-content { padding: 1rem; }
+            .card-header h1, .card-header h2 { font-size: 1.5rem; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="nav">
-            <div>
-                <a href="{{ url_for('main.index') }}" style="font-weight: bold; font-size: 18px;">🪙 COINctrl</a>
-            </div>
-            <div>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('main.dashboard') }}">
+                🪙 <strong>COINctrl</strong>
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
                 {% if current_user.is_authenticated %}
-                    <a href="{{ url_for('main.dashboard') }}">📊 Dashboard</a>
-                <span>👤 {{ current_user.first_name }}</span>
-                    <a href="{{ url_for('auth.logout') }}">🚪 Sair</a>
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.dashboard') }}">
+                            🏠 Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            💰 Financeiro
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('financial.dashboard') }}">📊 Dashboard</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('financial.new_transaction') }}">➕ Nova Transação</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('financial.transactions') }}">📋 Ver Transações</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('financial.new_category') }}">🏷️ Nova Categoria</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('financial.categories') }}">📂 Ver Categorias</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            �� {{ current_user.first_name }}
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#">⚙️ Configurações</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">🚪 Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
                 {% else %}
-                    <a href="{{ url_for('auth.login') }}">🔐 Login</a>
-                    <a href="{{ url_for('auth.register') }}">🚀 Cadastrar</a>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.login') }}">🔑 Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.register') }}">📝 Cadastrar</a>
+                    </li>
+                </ul>
                 {% endif %}
             </div>
         </div>
+    </nav>
 
-        <!-- Flash Messages -->
+    <!-- Flash Messages -->
+    <div class="container-fluid mt-3">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-                <div class="flash-messages">
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }}">
-                            {{ message }}
-                            <button class="alert-close" onclick="this.parentElement.remove()">×</button>
-                        </div>
-                    {% endfor %}
-                </div>
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                        {% if category == 'success' %}🎉{% elif category == 'error' %}⚠️{% elif category == 'warning' %}⚠️{% else %}ℹ️{% endif %}
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
             {% endif %}
         {% endwith %}
-
-        {% block content %}{% endblock %}
     </div>
 
+    <!-- Main Content -->
+    <main class="fade-in">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4 mt-5">
+        <div class="container text-center">
+            <p class="mb-0">🪙 <strong>COINctrl</strong> - Sistema de Controle Financeiro</p>
+            <small class="text-muted">Desenvolvido com Flask & Bootstrap</small>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
     <script>
-        // Auto-close alerts after 5 seconds
+        // Auto-hide alerts after 5 seconds
         setTimeout(function() {
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(alert => {
-                alert.style.opacity = '0';
-                alert.style.transition = 'opacity 0.5s';
-                setTimeout(() => alert.remove(), 500);
+            var alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function(alert) {
+                var bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
             });
         }, 5000);
+        
+        // Confirm delete actions
+        function confirmDelete(message) {
+            return confirm(message || 'Tem certeza que deseja excluir este item?');
+        }
     </script>
+    
+    {% block scripts %}{% endblock %}
 </body>
 </html>

@@ -1,42 +1,161 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - COINctrl</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
-        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .btn { background: #dc3545; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; }
-        .btn:hover { background: #c82333; }
-        .welcome { background: #d4edda; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+        body { background: #f8f9fa; }
+        .card { box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15); border: none; }
+        .card-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .stats-card { transition: transform 0.2s; }
+        .stats-card:hover { transform: translateY(-2px); }
+        .financial-summary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🪙 COINctrl - Dashboard</h1>
-            <a href="{{ url_for('auth.logout') }}" class="btn">Logout</a>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('main.dashboard') }}">
+                🪙 <strong>COINctrl</strong>
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{{ url_for('financial.dashboard') }}">💰 Financeiro</a>
+                <a class="nav-link" href="{{ url_for('auth.logout') }}">�� Logout</a>
+            </div>
         </div>
-        
-        <div class="welcome">
-            <h2>Bem-vindo, {{ user.first_name }}! 🎉</h2>
-            <p><strong>Email:</strong> {{ user.email }}</p>
-            <p><strong>Conta criada em:</strong> {{ user.created_at.strftime('%d/%m/%Y') }}</p>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Header de Boas-vindas -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="mb-0">👋 Bem-vindo, {{ user.first_name }}!</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <p class="mb-1"><strong>📧 Email:</strong> {{ user.email }}</p>
+                                <p class="mb-1"><strong>👤 Username:</strong> {{ user.username }}</p>
+                                <p class="mb-0"><strong>📅 Conta criada em:</strong> {{ user.created_at.strftime('%d/%m/%Y às %H:%M') }}</p>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <a href="{{ url_for('financial.dashboard') }}" class="btn btn-success btn-lg">
+                                    💰 Acessar Financeiro
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        
-        <div>
-            <h3>Sistema de Autenticação Funcionando! ✅</h3>
-            <p>Você está logado com sucesso no COINctrl.</p>
-            
-            <h4>Funcionalidades Implementadas:</h4>
-            <ul>
-                <li>✅ Cadastro de usuários</li>
-                <li>✅ Login/Logout seguro</li>
-                <li>✅ Senhas criptografadas</li>
-                <li>✅ Gerenciamento de sessão</li>
-                <li>✅ OAuth Google (se configurado)</li>
-            </ul>
+
+        <!-- Resumo Financeiro -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card financial-summary">
+                    <div class="card-body">
+                        <h4 class="text-white mb-3">📊 Resumo Financeiro</h4>
+                        <div class="row text-center">
+                            <div class="col-md-3">
+                                <h3 class="text-white">R$ {{ "%.2f"|format(totals.receitas|float) }}</h3>
+                                <p class="text-white-50 mb-0">📈 Receitas</p>
+                            </div>
+                            <div class="col-md-3">
+                                <h3 class="text-white">R$ {{ "%.2f"|format(totals.despesas|float) }}</h3>
+                                <p class="text-white-50 mb-0">📉 Despesas</p>
+                            </div>
+                            <div class="col-md-3">
+                                <h3 class="text-white">R$ {{ "%.2f"|format(totals.saldo|float) }}</h3>
+                                <p class="text-white-50 mb-0">💰 Saldo</p>
+                            </div>
+                            <div class="col-md-3">
+                                <h3 class="text-white">{{ total_transactions }}</h3>
+                                <p class="text-white-50 mb-0">📋 Transações</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Módulos do Sistema -->
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card stats-card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0">💰 Sistema Financeiro</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">Gerencie suas receitas, despesas e categorias.</p>
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('financial.dashboard') }}" class="btn btn-primary">🏠 Dashboard Financeiro</a>
+                            <a href="{{ url_for('financial.new_transaction') }}" class="btn btn-success">➕ Nova Transação</a>
+                            <a href="{{ url_for('financial.transactions') }}" class="btn btn-outline-primary">�� Ver Transações</a>
+                            <a href="{{ url_for('financial.categories') }}" class="btn btn-outline-secondary">🏷️ Categorias</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div class="card stats-card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0">⚙️ Sistema de Autenticação</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">Funcionalidades de segurança implementadas:</p>
+                        <ul class="list-unstyled">
+                            <li>✅ Cadastro de usuários</li>
+                            <li>✅ Login/Logout seguro</li>
+                            <li>✅ Senhas criptografadas</li>
+                            <li>✅ Gerenciamento de sessão</li>
+                            <li>✅ OAuth Google (se configurado)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ações Rápidas -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">🚀 Ações Rápidas</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 mb-2">
+                                <a href="{{ url_for('financial.new_transaction') }}" class="btn btn-success w-100">
+                                    ➕ Nova Transação
+                                </a>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <a href="{{ url_for('financial.new_category') }}" class="btn btn-info w-100">
+                                    🏷️ Nova Categoria
+                                </a>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <a href="{{ url_for('financial.transactions') }}" class="btn btn-outline-primary w-100">
+                                    📊 Relatórios
+                                </a>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <a href="{{ url_for('financial.dashboard') }}" class="btn btn-outline-secondary w-100">
+                                    💰 Financeiro
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

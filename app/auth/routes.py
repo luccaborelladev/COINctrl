@@ -5,6 +5,7 @@ from datetime import timedelta
 import re
 import os
 import json
+from app.auth import auth_bp
 
 # PERMITIR HTTP PARA DESENVOLVIMENTO LOCAL
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
@@ -49,8 +50,8 @@ def register():
         # Validar senha
         if not password:
             errors.append('Senha é obrigatória.')
-        elif len(password) < 6:
-            errors.append('Senha deve ter pelo menos 6 caracteres.')
+        elif len(password) < 8:
+            errors.append('Senha deve ter pelo menos 8 caracteres.')
         
         # Validar confirmação de senha
         if not confirm_password:
@@ -58,6 +59,14 @@ def register():
         elif password != confirm_password:
             errors.append('Senhas não coincidem.')
         
+        # Verificar se a senha contém pelo menos uma letra maiúscula
+        if not re.search(r'[A-Z]', password):
+            errors.append('Senha deve conter pelo menos uma letra maiúscula.')
+        
+        # Verificar se a senha contém pelo menos um caractere especial
+        if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
+            errors.append('Senha deve conter pelo menos um caractere especial.')
+
         # Verificar se email já existe
         if not errors:
             existing_user = User.query.filter_by(email=email).first()

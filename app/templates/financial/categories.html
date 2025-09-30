@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+
+{% block title %}Categorias - COINctrl{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">🏷️ Gerenciar Categorias</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <a href="{{ url_for('financial.new_category') }}" class="btn btn-success">
+                            ➕ Nova Categoria
+                        </a>
+                        <a href="{{ url_for('financial.dashboard') }}" class="btn btn-outline-primary">
+                            🏠 Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas das Categorias -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-success">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs fw-bold text-success text-uppercase mb-1">Receitas</div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">{{ receita_categories|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <span class="text-success fs-1">📈</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card border-danger">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs fw-bold text-danger text-uppercase mb-1">Despesas</div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">{{ despesa_categories|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <span class="text-danger fs-1">📉</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card border-info">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs fw-bold text-info text-uppercase mb-1">Total</div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">{{ categories|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <span class="text-info fs-1">🏷️</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Categorias -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 fw-bold text-primary">📋 Lista de Categorias</h6>
+                </div>
+                <div class="card-body">
+                    {% if categories %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Categoria</th>
+                                        <th>Tipo</th>
+                                        <th>Cor</th>
+                                        <th>Transações</th>
+                                        <th>Total Usado</th>
+                                        <th class="text-center">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for category in categories %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <span class="category-icon me-2">{{ category.icon }}</span>
+                                                <div>
+                                                    <strong>{{ category.name }}</strong>
+                                                    {% if category.description %}
+                                                    <br><small class="text-muted">{{ category.description }}</small>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge {% if category.transaction_type.value == 'receita' %}bg-success{% else %}bg-danger{% endif %}">
+                                                {{ '📈' if category.transaction_type.value == 'receita' else '📉' }}
+                                                {{ category.transaction_type.value.title() }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="color-circle me-2" data-color="{{ category.color }}"></div>
+                                                <code>{{ category.color }}</code>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">{{ category.transactions|length }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="text-success">
+                                                <strong>R$ 0,00</strong>
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <a href="{{ url_for('financial.edit_category', id=category.id) }}" 
+                                                   class="btn btn-outline-primary" title="Editar">
+                                                    ✏️
+                                                </a>
+                                                <button type="button" class="btn btn-outline-danger" 
+                                                        data-category-id="{{ category.id }}" 
+                                                        data-category-name="{{ category.name }}" 
+                                                        onclick="deleteCategory(this)" 
+                                                        title="Excluir">
+                                                    🗑️
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <div class="empty-state-icon">📂</div>
+                            <h4 class="text-muted">Nenhuma categoria encontrada</h4>
+                            <p class="text-muted">Comece criando sua primeira categoria!</p>
+                            <a href="{{ url_for('financial.new_category') }}" class="btn btn-success btn-lg">
+                                ➕ Criar Primeira Categoria
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmação de Exclusão -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">🗑️ Confirmar Exclusão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir a categoria <strong id="categoryName"></strong>?</p>
+                <p class="text-muted"><small>⚠️ Esta ação não pode ser desfeita.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <input type="hidden" name="_method" value="DELETE">
+                    <button type="submit" class="btn btn-danger">🗑️ Excluir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+.category-icon {
+    font-size: 1.5rem;
+}
+
+.color-circle {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.empty-state-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Aplicar cores aos círculos de cor
+    const colorCircles = document.querySelectorAll('.color-circle[data-color]');
+    colorCircles.forEach(function(circle) {
+        const color = circle.getAttribute('data-color');
+        circle.style.backgroundColor = color;
+    });
+});
+
+/**
+ * Gera URL de exclusão para categoria específica
+ * @param {string|number} categoryId - ID da categoria a ser excluída
+ * @returns {string} URL completa para exclusão
+ */
+function generateDeleteUrl(categoryId) {
+    // Validar categoryId
+    if (!categoryId || isNaN(categoryId)) {
+        console.error('ID de categoria inválido:', categoryId);
+        return '#';
+    }
+    
+    // Gerar URL base com ID conhecido (1) e substituir pelo ID real
+    const baseUrl = "{{ url_for('financial.delete_category', id=1) }}";
+    const deleteUrl = baseUrl.replace('/1/', `/${categoryId}/`);
+    
+    return deleteUrl;
+}
+
+/**
+ * Manipula exclusão de categoria
+ * @param {HTMLElement} button - Elemento botão que foi clicado
+ */
+function deleteCategory(button) {
+    try {
+        // Extrair dados do botão
+        const categoryId = button.getAttribute('data-category-id');
+        const categoryName = button.getAttribute('data-category-name');
+        
+        // Validar dados obrigatórios
+        if (!categoryId || !categoryName) {
+            console.error('Dados de categoria não encontrados no botão');
+            return;
+        }
+        
+        // Atualizar conteúdo do modal
+        const categoryNameElement = document.getElementById('categoryName');
+        if (categoryNameElement) {
+            categoryNameElement.textContent = categoryName;
+        }
+        
+        // Gerar e definir URL de exclusão
+        const deleteUrl = generateDeleteUrl(categoryId);
+        const deleteForm = document.getElementById('deleteForm');
+        if (deleteForm) {
+            deleteForm.action = deleteUrl;
+        }
+        
+        // Exibir modal de confirmação
+        const modalElement = document.getElementById('deleteModal');
+        if (modalElement && typeof bootstrap !== 'undefined') {
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+        } else {
+            console.error('Modal ou Bootstrap não encontrado');
+        }
+        
+    } catch (error) {
+        console.error('Erro ao processar exclusão de categoria:', error);
+        alert('Erro interno. Tente novamente.');
+    }
+}
+
+/**
+ * Manipula submissão do formulário de exclusão
+ * @param {Event} event - Evento de submissão
+ */
+function handleDeleteSubmit(event) {
+    const form = event.target;
+    const url = form.action;
+    
+    // Validar URL antes de submeter
+    if (!url || url === '#' || url.includes('undefined')) {
+        event.preventDefault();
+        alert('Erro na URL de exclusão. Recarregue a página e tente novamente.');
+        return false;
+    }
+    
+    return true;
+}
+
+// Adicionar listener ao formulário de exclusão
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteForm = document.getElementById('deleteForm');
+    if (deleteForm) {
+        deleteForm.addEventListener('submit', handleDeleteSubmit);
+    }
+});
+</script>
+{% endblock %}
