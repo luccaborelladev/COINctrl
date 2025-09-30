@@ -1,0 +1,317 @@
+{% extends "base.html" %}
+
+{% block title %}Transações - COINctrl{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">💳 Gerenciar Transações</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <a href="{{ url_for('financial.new_transaction') }}" class="btn btn-success">
+                            ➕ Nova Transação
+                        </a>
+                        <a href="{{ url_for('financial.dashboard') }}" class="btn btn-outline-primary">
+                            🏠 Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resumo Financeiro -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-success">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs fw-bold text-success text-uppercase mb-1">Receitas</div>
+                            <div class="h5 mb-0 fw-bold text-success">{{ "R$ {:,.2f}".format(totals.receitas).replace(',', 'X').replace('.', ',').replace('X', '.') }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <span class="text-success fs-1">📈</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card border-danger">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs fw-bold text-danger text-uppercase mb-1">Despesas</div>
+                            <div class="h5 mb-0 fw-bold text-danger">{{ "R$ {:,.2f}".format(totals.despesas).replace(',', 'X').replace('.', ',').replace('X', '.') }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <span class="text-danger fs-1">📉</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card border-info">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs fw-bold text-info text-uppercase mb-1">Saldo</div>
+                            <div class="h5 mb-0 fw-bold {% if totals.saldo >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                {{ "R$ {:,.2f}".format(totals.saldo).replace(',', 'X').replace('.', ',').replace('X', '.') }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <span class="{% if totals.saldo >= 0 %}text-success{% else %}text-danger{% endif %} fs-1">💰</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card border-secondary">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs fw-bold text-secondary text-uppercase mb-1">Total</div>
+                            <div class="h5 mb-0 fw-bold text-secondary">{{ transactions|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <span class="text-secondary fs-1">📊</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="search" class="form-label">🔍 Buscar</label>
+                            <input type="text" class="form-control" id="search" name="search" 
+                                   value="{{ request.args.get('search', '') }}" placeholder="Descrição...">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="type_filter" class="form-label">📊 Tipo</label>
+                            <select class="form-select" id="type_filter" name="type">
+                                <option value="">Todos</option>
+                                <option value="receita" {% if request.args.get('type') == 'receita' %}selected{% endif %}>📈 Receita</option>
+                                <option value="despesa" {% if request.args.get('type') == 'despesa' %}selected{% endif %}>📉 Despesa</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="category_filter" class="form-label">🏷️ Categoria</label>
+                            <select class="form-select" id="category_filter" name="category">
+                                <option value="">Todas</option>
+                                {% for category in categories %}
+                                <option value="{{ category.id }}" {% if request.args.get('category') == category.id|string %}selected{% endif %}>
+                                    {{ category.icon }} {{ category.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="date_from" class="form-label">📅 De</label>
+                            <input type="date" class="form-control" id="date_from" name="date_from" 
+                                   value="{{ request.args.get('date_from', '') }}">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="date_to" class="form-label">📅 Até</label>
+                            <input type="date" class="form-control" id="date_to" name="date_to" 
+                                   value="{{ request.args.get('date_to', '') }}">
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">🔍 Filtrar</button>
+                            <a href="{{ url_for('financial.transactions') }}" class="btn btn-outline-secondary">🔄 Limpar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Transações -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 fw-bold text-primary">📋 Lista de Transações</h6>
+                </div>
+                <div class="card-body">
+                    {% if transactions %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Descrição</th>
+                                        <th>Categoria</th>
+                                        <th>Tipo</th>
+                                        <th class="text-end">Valor</th>
+                                        <th class="text-center">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for transaction in transactions %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ transaction.transaction_date.strftime('%d/%m/%Y') }}</strong>
+                                            <br><small class="text-muted">{{ transaction.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
+                                        </td>
+                                        <td>
+                                            <strong>{{ transaction.description }}</strong>
+                                            {% if transaction.notes %}
+                                            <br><small class="text-muted">{{ transaction.notes[:50] }}{% if transaction.notes|length > 50 %}...{% endif %}</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <span class="category-icon me-2">{{ transaction.category.icon }}</span>
+                                                <div>
+                                                    <strong>{{ transaction.category.name }}</strong>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge {% if transaction.transaction_type.value == 'receita' %}bg-success{% else %}bg-danger{% endif %}">
+                                                {{ '📈' if transaction.transaction_type.value == 'receita' else '📉' }}
+                                                {{ transaction.transaction_type.value.title() }}
+                                            </span>
+                                        </td>
+                                        <td class="text-end">
+                                            <strong class="{% if transaction.transaction_type.value == 'receita' %}text-success{% else %}text-danger{% endif %}">
+                                                {{ transaction.formatted_amount }}
+                                            </strong>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <a href="{{ url_for('financial.edit_transaction', id=transaction.id) }}" 
+                                                   class="btn btn-outline-primary" title="Editar">
+                                                    ✏️
+                                                </a>
+                                                <button type="button" class="btn btn-outline-danger" 
+                                                        data-transaction-id="{{ transaction.id }}" 
+                                                        data-transaction-desc="{{ transaction.description }}" 
+                                                        onclick="deleteTransaction(this)" 
+                                                        title="Excluir">
+                                                    🗑️
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <div class="empty-state-icon">💳</div>
+                            <h4 class="text-muted">Nenhuma transação encontrada</h4>
+                            <p class="text-muted">Comece adicionando sua primeira transação!</p>
+                            <a href="{{ url_for('financial.new_transaction') }}" class="btn btn-success btn-lg">
+                                ➕ Criar Primeira Transação
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmação de Exclusão -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">🗑️ Confirmar Exclusão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir a transação <strong id="transactionDesc"></strong>?</p>
+                <p class="text-muted"><small>⚠️ Esta ação não pode ser desfeita.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <input type="hidden" name="_method" value="DELETE">
+                    <button type="submit" class="btn btn-danger">🗑️ Excluir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+.category-icon {
+    font-size: 1.5rem;
+}
+
+.empty-state-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.table th {
+    border-top: none;
+}
+
+.card {
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-submit form when filters change
+    const filterForm = document.querySelector('form[method="GET"]');
+    const autoSubmitElements = ['type_filter', 'category_filter'];
+    
+    autoSubmitElements.forEach(function(elementId) {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.addEventListener('change', function() {
+                filterForm.submit();
+            });
+        }
+    });
+});
+
+function deleteTransaction(button) {
+    try {
+        const transactionId = button.getAttribute('data-transaction-id');
+        const transactionDesc = button.getAttribute('data-transaction-desc');
+        
+        if (!transactionId || !transactionDesc) {
+            console.error('Dados de transação não encontrados');
+            return;
+        }
+        
+        document.getElementById('transactionDesc').textContent = transactionDesc;
+        
+        const deleteUrl = "{{ url_for('financial.delete_transaction', id=1) }}".replace('/1/', `/${transactionId}/`);
+        document.getElementById('deleteForm').action = deleteUrl;
+        
+        const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        modal.show();
+        
+    } catch (error) {
+        console.error('Erro ao processar exclusão:', error);
+        alert('Erro interno. Tente novamente.');
+    }
+}
+</script>
+{% endblock %}
