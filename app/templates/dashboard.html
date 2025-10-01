@@ -18,11 +18,12 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
             <a class="navbar-brand" href="{{ url_for('main.dashboard') }}">
-                🪙 <strong>COINctrl</strong>
+                <img src="{{ url_for('static', filename='img/icon_coinctrl.png') }}" alt="Ícone Coinctrl" style="height:32px;vertical-align:middle;"> 
+                <strong>COINctrl</strong>
             </a>
             <div class="navbar-nav ms-auto">
                 <a class="nav-link" href="{{ url_for('financial.dashboard') }}">💰 Financeiro</a>
-                <a class="nav-link" href="{{ url_for('auth.logout') }}">�� Logout</a>
+                <a class="nav-link" href="{{ url_for('auth.logout') }}">🚪 Logout</a>
             </div>
         </div>
     </nav>
@@ -94,7 +95,7 @@
                         <div class="d-grid gap-2">
                             <a href="{{ url_for('financial.dashboard') }}" class="btn btn-primary">🏠 Dashboard Financeiro</a>
                             <a href="{{ url_for('financial.new_transaction') }}" class="btn btn-success">➕ Nova Transação</a>
-                            <a href="{{ url_for('financial.transactions') }}" class="btn btn-outline-primary">�� Ver Transações</a>
+                            <a href="{{ url_for('financial.transactions') }}" class="btn btn-outline-primary">📊 Ver Transações</a>
                             <a href="{{ url_for('financial.categories') }}" class="btn btn-outline-secondary">🏷️ Categorias</a>
                         </div>
                     </div>
@@ -104,16 +105,17 @@
             <div class="col-md-6 mb-4">
                 <div class="card stats-card h-100">
                     <div class="card-header">
-                        <h5 class="mb-0">⚙️ Sistema de Autenticação</h5>
+                        <h5 class="mb-0">⚙️ Funcionalidades implementadas</h5>
                     </div>
                     <div class="card-body">
-                        <p class="card-text">Funcionalidades de segurança implementadas:</p>
-                        <ul class="list-unstyled">
-                            <li>✅ Cadastro de usuários</li>
+                            <ul class="list-unstyled">
+                            <li>✅ Autenticação de usuários</li>
                             <li>✅ Login/Logout seguro</li>
                             <li>✅ Senhas criptografadas</li>
                             <li>✅ Gerenciamento de sessão</li>
-                            <li>✅ OAuth Google (se configurado)</li>
+                            <li>✅ OAuth Google</li>
+                            <li>✅ CRUD (receitas, despesas e categorias)</li>
+                            <li>✅ Cálculo automático de saldo</li>
                         </ul>
                     </div>
                 </div>
