@@ -1,7 +1,8 @@
 # run.py
 import os
 from app import create_app, db
-
+from dotenv import load_dotenv
+load_dotenv()
 # PERMITIR HTTP EM DESENVOLVIMENTO (apenas para desenvolvimento local)
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
