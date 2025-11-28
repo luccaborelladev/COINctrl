@@ -1,0 +1,465 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if transaction %}Editar Transação{% else %}Nova Transação{% endif %} - COINctrl
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    {% if transaction %}
+                        ✏️ Editar Transação: {{ transaction.description }}
+                    {% else %}
+                        ➕ Nova Transação
+                    {% endif %}
+                </h1>
+                <a href="{{ url_for('financial.transactions') }}" class="btn btn-outline-secondary">
+                    ⬅️ Voltar para Lista
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Formulário -->
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="m-0 fw-bold text-primary">
+                        📝 {% if transaction %}Editar{% else %}Criar{% endif %} Transação
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="description" class="form-label fw-bold">
+                                    Descrição <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="description" 
+                                       name="description" 
+                                       value="{{ transaction.description if transaction else '' }}"
+                                       placeholder="Ex: Compra no supermercado..."
+                                       required
+                                       maxlength="200">
+                                <div class="form-text">Máximo 200 caracteres</div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="amount" class="form-label fw-bold">
+                                    Valor <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">R$</span>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           id="amount" 
+                                           name="amount" 
+                                           value="{{ transaction.amount if transaction else '' }}"
+                                           placeholder="0,00"
+                                           step="0.01"
+                                           min="0.01"
+                                           required>
+                                </div>
+                                <div class="form-text">Use ponto para decimais (ex: 10.50)</div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="transaction_type" class="form-label fw-bold">
+                                    Tipo <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" id="transaction_type" name="transaction_type" required>
+                                    <option value="">Selecione o tipo</option>
+                                    <option value="receita" {% if transaction and transaction.transaction_type.value == 'receita' %}selected{% endif %}>
+                                        📈 Receita
+                                    </option>
+                                    <option value="despesa" {% if transaction and transaction.transaction_type.value == 'despesa' %}selected{% endif %}>
+                                        📉 Despesa
+                                    </option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="category_id" class="form-label fw-bold">
+                                    Categoria <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" id="category_id" name="category_id" required>
+                                    <option value="">Primeiro selecione o tipo</option>
+                                </select>
+                                <div class="form-text">Categorias são filtradas pelo tipo selecionado</div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="transaction_date" class="form-label fw-bold">
+                                    Data da Transação <span class="text-danger">*</span>
+                                </label>
+                                <input type="date" 
+                                       class="form-control" 
+                                       id="transaction_date" 
+                                       name="transaction_date" 
+                                       value="{{ transaction.transaction_date.strftime('%Y-%m-%d') if transaction else '' }}"
+                                       required>
+                                <div class="form-text">Data em que a transação ocorreu</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="notes" class="form-label fw-bold">Observações (Opcional)</label>
+                            <textarea class="form-control" 
+                                      id="notes" 
+                                      name="notes" 
+                                      rows="4" 
+                                      placeholder="Informações adicionais sobre a transação..."
+                                      maxlength="500">{{ transaction.notes if transaction else '' }}</textarea>
+                            <div class="form-text">Máximo 500 caracteres</div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('financial.transactions') }}" class="btn btn-secondary">
+                                ❌ Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                {% if transaction %}
+                                    💾 Salvar Alterações
+                                {% else %}
+                                    ➕ Criar Transação
+                                {% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preview -->
+        <div class="col-md-4">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="m-0 fw-bold text-success">👁️ Preview da Transação</h6>
+                </div>
+                <div class="card-body">
+                    <div class="preview-card">
+                        <div class="text-center mb-3">
+                            <span id="categoryIconPreview" class="category-icon-large">💰</span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <strong>Descrição:</strong>
+                            <div id="descriptionPreview" class="preview-text">Digite uma descrição...</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <strong>Valor:</strong>
+                            <div id="amountPreview" class="preview-amount">R$ 0,00</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <strong>Tipo:</strong>
+                            <span id="typePreview" class="badge bg-secondary">Selecione o tipo</span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <strong>Categoria:</strong>
+                            <div id="categoryPreview" class="preview-text">Selecione uma categoria</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <strong>Data:</strong>
+                            <div id="datePreview" class="preview-text">Selecione uma data</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <strong>Observações:</strong>
+                            <div id="notesPreview" class="preview-text text-muted">Nenhuma observação</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden data for JavaScript -->
+<script type="application/json" id="page-data">
+{
+    "isEditing": {% if transaction %}true{% else %}false{% endif %},
+    "transactionData": {% if transaction %}{
+        "id": {{ transaction.id }},
+        "type": "{{ transaction.transaction_type.value }}",
+        "categoryId": {{ transaction.category_id }}
+    }{% else %}null{% endif %},
+    "apiUrl": "{{ url_for('financial.api_categories_by_type', transaction_type='PLACEHOLDER') }}"
+}
+</script>
+{% endblock %}
+
+{% block scripts %}
+<style>
+.preview-card {
+    padding: 1.5rem;
+    border: 2px dashed #dee2e6;
+    border-radius: 0.5rem;
+    background-color: #f8f9fa;
+    min-height: 300px;
+}
+
+.category-icon-large {
+    font-size: 3rem;
+    display: block;
+}
+
+.preview-text {
+    background-color: #ffffff;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    border: 1px solid #dee2e6;
+    min-height: 2rem;
+    display: flex;
+    align-items: center;
+}
+
+.preview-amount {
+    background-color: #ffffff;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    border: 1px solid #dee2e6;
+    font-size: 1.25rem;
+    font-weight: bold;
+    text-align: center;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    'use strict';
+    
+    // Obter dados da página
+    const pageDataElement = document.getElementById('page-data');
+    const pageData = pageDataElement ? JSON.parse(pageDataElement.textContent) : {};
+    
+    // Elementos do formulário
+    const descriptionInput = document.getElementById('description');
+    const amountInput = document.getElementById('amount');
+    const typeSelect = document.getElementById('transaction_type');
+    const categorySelect = document.getElementById('category_id');
+    const dateInput = document.getElementById('transaction_date');
+    const notesInput = document.getElementById('notes');
+    
+    // Elementos do preview
+    const descriptionPreview = document.getElementById('descriptionPreview');
+    const amountPreview = document.getElementById('amountPreview');
+    const typePreview = document.getElementById('typePreview');
+    const categoryPreview = document.getElementById('categoryPreview');
+    const categoryIconPreview = document.getElementById('categoryIconPreview');
+    const datePreview = document.getElementById('datePreview');
+    const notesPreview = document.getElementById('notesPreview');
+
+    // Dados das categorias
+    let categoriesData = {};
+
+    // Função para atualizar preview
+    function updatePreview() {
+        try {
+            // Descrição
+            if (descriptionInput && descriptionPreview) {
+                const desc = descriptionInput.value.trim() || 'Digite uma descrição...';
+                descriptionPreview.textContent = desc;
+            }
+            
+            // Valor
+            if (amountInput && amountPreview) {
+                const amount = parseFloat(amountInput.value) || 0;
+                const formatted = new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                }).format(amount);
+                amountPreview.textContent = formatted;
+                
+                // Cor baseada no tipo
+                const type = typeSelect ? typeSelect.value : '';
+                if (type === 'receita') {
+                    amountPreview.className = 'preview-amount text-success';
+                } else if (type === 'despesa') {
+                    amountPreview.className = 'preview-amount text-danger';
+                } else {
+                    amountPreview.className = 'preview-amount';
+                }
+            }
+            
+            // Tipo
+            if (typeSelect && typePreview) {
+                const type = typeSelect.value;
+                if (type === 'receita') {
+                    typePreview.textContent = '📈 Receita';
+                    typePreview.className = 'badge bg-success';
+                } else if (type === 'despesa') {
+                    typePreview.textContent = '📉 Despesa';
+                    typePreview.className = 'badge bg-danger';
+                } else {
+                    typePreview.textContent = 'Selecione o tipo';
+                    typePreview.className = 'badge bg-secondary';
+                }
+            }
+            
+            // Categoria
+            if (categorySelect && categoryPreview && categoryIconPreview) {
+                const categoryId = categorySelect.value;
+                if (categoryId && categoriesData[categoryId]) {
+                    const category = categoriesData[categoryId];
+                    categoryPreview.textContent = category.name;
+                    categoryIconPreview.textContent = category.icon;
+                } else {
+                    categoryPreview.textContent = 'Selecione uma categoria';
+                    categoryIconPreview.textContent = '💰';
+                }
+            }
+            
+            // Data
+            if (dateInput && datePreview) {
+                const date = dateInput.value;
+                if (date) {
+                    try {
+                        const dateObj = new Date(date + 'T00:00:00');
+                        const formatted = dateObj.toLocaleDateString('pt-BR');
+                        datePreview.textContent = formatted;
+                    } catch (e) {
+                        datePreview.textContent = 'Data inválida';
+                    }
+                } else {
+                    datePreview.textContent = 'Selecione uma data';
+                }
+            }
+            
+            // Observações
+            if (notesInput && notesPreview) {
+                const notes = notesInput.value.trim() || 'Nenhuma observação';
+                notesPreview.textContent = notes;
+            }
+        } catch (error) {
+            console.error('Erro ao atualizar preview:', error);
+        }
+    }
+
+    // Função para carregar categorias por tipo
+    function loadCategoriesByType(type) {
+        if (!type) {
+            categorySelect.innerHTML = '<option value="">Primeiro selecione o tipo</option>';
+            categoriesData = {};
+            updatePreview();
+            return;
+        }
+
+        // Construir URL da API
+        const apiUrl = pageData.apiUrl ? pageData.apiUrl.replace('PLACEHOLDER', type) : `/financial/api/categories/${type}`;
+
+        // Fazer requisição AJAX
+        fetch(apiUrl)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erro na requisição');
+                }
+                return response.json();
+            })
+            .then(categories => {
+                // Limpar select
+                categorySelect.innerHTML = '<option value="">Selecione uma categoria</option>';
+                categoriesData = {};
+                
+                // Verificar se há categorias
+                if (!categories || categories.length === 0) {
+                    categorySelect.innerHTML = '<option value="">Nenhuma categoria encontrada</option>';
+                    updatePreview();
+                    return;
+                }
+                
+                // Adicionar categorias
+                categories.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category.id;
+                    option.textContent = `${category.icon} ${category.name}`;
+                    
+                    // Se estamos editando, manter seleção
+                    if (pageData.isEditing && pageData.transactionData && 
+                        category.id === pageData.transactionData.categoryId) {
+                        option.selected = true;
+                    }
+                    
+                    categorySelect.appendChild(option);
+                    categoriesData[category.id] = category;
+                });
+                
+                updatePreview();
+            })
+            .catch(error => {
+                console.error('Erro ao carregar categorias:', error);
+                categorySelect.innerHTML = '<option value="">Erro ao carregar categorias</option>';
+            });
+    }
+
+    // Event listeners
+    function setupEventListeners() {
+        if (descriptionInput) {
+            descriptionInput.addEventListener('input', updatePreview);
+        }
+        if (amountInput) {
+            amountInput.addEventListener('input', updatePreview);
+        }
+        if (dateInput) {
+            dateInput.addEventListener('change', updatePreview);
+        }
+        if (notesInput) {
+            notesInput.addEventListener('input', updatePreview);
+        }
+        
+        if (typeSelect) {
+            typeSelect.addEventListener('change', function() {
+                loadCategoriesByType(this.value);
+                updatePreview();
+            });
+        }
+        
+        if (categorySelect) {
+            categorySelect.addEventListener('change', updatePreview);
+        }
+    }
+
+    // Inicialização
+    function initialize() {
+        // Definir data padrão como hoje se não houver valor
+        if (dateInput && !dateInput.value) {
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.value = today;
+        }
+
+        // Carregar categorias se estamos editando
+        if (pageData.isEditing && pageData.transactionData) {
+            loadCategoriesByType(pageData.transactionData.type);
+        }
+
+        // Configurar event listeners
+        setupEventListeners();
+        
+        // Atualização inicial do preview
+        updatePreview();
+    }
+
+    // Iniciar aplicação
+    initialize();
+});
+</script>
+{% endblock %}

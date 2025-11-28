@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard Financeiro - COINctrl{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">💰 Dashboard Financeiro</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <a href="{{ url_for('financial.new_transaction') }}" class="btn btn-success btn-sm">
+                            ➕ Nova Transação
+                        </a>
+                        <a href="{{ url_for('financial.new_category') }}" class="btn btn-outline-primary btn-sm">
+                            🏷️ Nova Categoria
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cards de Estatísticas -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card shadow h-100 py-2" style="border-left: 4px solid #28a745;">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Receitas</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                R$ {{ "%.2f"|format(totals.receitas|float) }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <span class="text-success">📈</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card shadow h-100 py-2" style="border-left: 4px solid #dc3545;">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Despesas</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                R$ {{ "%.2f"|format(totals.despesas|float) }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <span class="text-danger">📉</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card shadow h-100 py-2" style="border-left: 4px solid '{% if totals.saldo >= 0 %}#28a745{% else %}#dc3545{% endif %}';">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold {% if totals.saldo >= 0 %}text-success{% else %}text-danger{% endif %} text-uppercase mb-1">Saldo</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                R$ {{ "%.2f"|format(totals.saldo|float) }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <span class="{% if totals.saldo >= 0 %}text-success{% else %}text-danger{% endif %}">💰</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card shadow h-100 py-2" style="border-left: 4px solid #17a2b8;">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Transações</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_transactions }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <span class="text-info">📊</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ações Rápidas e Últimas Transações -->
+    <div class="row">
+        <!-- Ações Rápidas -->
+        <div class="col-xl-4 col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">🛠️ Ações Rápidas</h6>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <a href="{{ url_for('financial.new_transaction') }}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">➕ Nova Transação</h6>
+                                <small class="text-success">Receita/Despesa</small>
+                            </div>
+                            <p class="mb-1">Adicionar nova receita ou despesa</p>
+                        </a>
+                        
+                        <a href="{{ url_for('financial.transactions') }}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">📋 Ver Transações</h6>
+                                <small class="text-info">{{ total_transactions }} itens</small>
+                            </div>
+                            <p class="mb-1">Visualizar todas as transações</p>
+                        </a>
+                        
+                        <a href="{{ url_for('financial.categories') }}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">🏷️ Categorias</h6>
+                                <small class="text-warning">{{ total_categories }} itens</small>
+                            </div>
+                            <p class="mb-1">Gerenciar categorias</p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Últimas Transações -->
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">📊 Últimas Transações</h6>
+                    <a href="{{ url_for('financial.transactions') }}" class="btn btn-sm btn-outline-primary">Ver Todas</a>
+                </div>
+                <div class="card-body">
+                    {% if recent_transactions %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Descrição</th>
+                                        <th>Categoria</th>
+                                        <th>Tipo</th>
+                                        <th>Valor</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for transaction in recent_transactions %}
+                                    <tr>
+                                        <td>{{ transaction.transaction_date.strftime('%d/%m/%Y') }}</td>
+                                        <td>{{ transaction.description }}</td>
+                                        <td>
+                                            <span style="color: '{{ transaction.category.color }}'">
+                                                {{ transaction.category.icon }} {{ transaction.category.name }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge {% if transaction.transaction_type.value == 'receita' %}bg-success{% else %}bg-danger{% endif %}">
+                                                {{ '📈' if transaction.transaction_type.value == 'receita' else '📉' }}
+                                                {{ transaction.transaction_type.value.title() }}
+                                            </span>
+                                        </td>
+                                        <td class="{% if transaction.transaction_type.value == 'receita' %}text-success{% else %}text-danger{% endif %}">
+                                            <strong>{{ transaction.formatted_amount }}</strong>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <span style="font-size: 3rem;">📂</span>
+                            <p class="text-muted mt-3">Nenhuma transação encontrada.</p>
+                            <a href="{{ url_for('financial.new_transaction') }}" class="btn btn-success">➕ Adicionar Primeira Transação</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

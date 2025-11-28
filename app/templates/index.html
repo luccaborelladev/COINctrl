@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="welcome-section">
+    <h1 class="welcome-title">
+        <i class="fas fa-coins"></i>
+        COINctrl
+    </h1>
+    <p class="welcome-subtitle">
+        Seu controle financeiro pessoal de forma simples e eficiente
+    </p>
+    
+    {% if not current_user.is_authenticated %}
+    <div>
+        <a href="{{ url_for('auth.register') }}" class="btn btn-primary">
+            <i class="fas fa-user-plus"></i>
+            Começar Agora
+        </a>
+        <a href="{{ url_for('auth.login') }}" class="btn btn-secondary">
+            <i class="fas fa-sign-in-alt"></i>
+            Já tenho conta
+        </a>
+    </div>
+    {% else %}
+    <div>
+        <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary">
+            <i class="fas fa-tachometer-alt"></i>
+            Ir para Dashboard
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">
+            <i class="fas fa-star"></i>
+            Funcionalidades
+        </h2>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
+        <div style="text-align: center;">
+            <i class="fas fa-chart-line" style="font-size: 3rem; color: #667eea; margin-bottom: 1rem;"></i>
+            <h3>Dashboard Intuitivo</h3>
+            <p>Visualize seu saldo e transações de forma clara e organizada.</p>
+        </div>
+        <div style="text-align: center;">
+            <i class="fas fa-tags" style="font-size: 3rem; color: #28a745; margin-bottom: 1rem;"></i>
+            <h3>Categorização</h3>
+            <p>Organize suas receitas e despesas por categorias personalizadas.</p>
+        </div>
+        <div style="text-align: center;">
+            <i class="fas fa-mobile-alt" style="font-size: 3rem; color: #dc3545; margin-bottom: 1rem;"></i>
+            <h3>Responsivo</h3>
+            <p>Acesse de qualquer dispositivo - desktop, tablet ou celular.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

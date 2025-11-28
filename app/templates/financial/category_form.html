@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if category %}Editar Categoria{% else %}Nova Categoria{% endif %} - COINctrl
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    {% if category %}
+                        ✏️ Editar Categoria: {{ category.name }}
+                    {% else %}
+                        ➕ Nova Categoria
+                    {% endif %}
+                </h1>
+                <a href="{{ url_for('financial.categories') }}" class="btn btn-outline-secondary">
+                    ⬅️ Voltar para Lista
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Formulário -->
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="m-0 fw-bold text-primary">
+                        📝 {% if category %}Editar{% else %}Criar{% endif %} Categoria
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="name" class="form-label fw-bold">
+                                    Nome da Categoria <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="name" 
+                                       name="name" 
+                                       value="{{ category.name if category else '' }}"
+                                       placeholder="Ex: Alimentação, Transporte..."
+                                       required
+                                       maxlength="50">
+                                <div class="form-text">Máximo 50 caracteres</div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="transaction_type" class="form-label fw-bold">
+                                    Tipo <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" id="transaction_type" name="transaction_type" required {% if category %}disabled{% endif %}>
+                                    <option value="">Selecione o tipo</option>
+                                    <option value="receita" {% if category and category.transaction_type.value == 'receita' %}selected{% endif %}>
+                                        📈 Receita
+                                    </option>
+                                    <option value="despesa" {% if category and category.transaction_type.value == 'despesa' %}selected{% endif %}>
+                                        📉 Despesa
+                                    </option>
+                                </select>
+                                {% if category %}
+                                    <div class="form-text text-muted">Tipo não pode ser alterado após criação</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label fw-bold">Descrição (Opcional)</label>
+                            <textarea class="form-control" 
+                                      id="description" 
+                                      name="description" 
+                                      rows="3" 
+                                      placeholder="Descreva o propósito desta categoria..."
+                                      maxlength="200">{{ category.description if category else '' }}</textarea>
+                            <div class="form-text">Máximo 200 caracteres</div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="icon" class="form-label fw-bold">Ícone</label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="icon" 
+                                       name="icon" 
+                                       value="{{ category.icon if category else '💰' }}"
+                                       placeholder="💰"
+                                       maxlength="10">
+                                <div class="form-text">Digite um emoji</div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="color" class="form-label fw-bold">Cor</label>
+                                <input type="color" 
+                                       class="form-control form-control-color" 
+                                       id="color" 
+                                       name="color" 
+                                       value="{{ category.color if category else '#007bff' }}"
+                                       title="Escolha uma cor">
+                                <div class="form-text">Cor para identificação</div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('financial.categories') }}" class="btn btn-secondary">
+                                ❌ Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                {% if category %}
+                                    💾 Salvar Alterações
+                                {% else %}
+                                    ➕ Criar Categoria
+                                {% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preview -->
+        <div class="col-md-4">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="m-0 fw-bold text-success">👁️ Preview</h6>
+                </div>
+                <div class="card-body text-center">
+                    <div class="preview-card">
+                        <div class="mb-3">
+                            <span id="iconPreview" class="preview-icon">{{ category.icon if category else '💰' }}</span>
+                        </div>
+                        <h5 id="namePreview" class="fw-bold">{{ category.name if category else 'Nome da Categoria' }}</h5>
+                        <span id="typePreview" class="badge bg-primary">
+                            {% if category %}
+                                {{ '📈' if category.transaction_type.value == 'receita' else '📉' }}
+                                {{ category.transaction_type.value.title() }}
+                            {% else %}
+                                Selecione o tipo
+                            {% endif %}
+                        </span>
+                        <div class="mt-3">
+                            <div id="colorPreview" class="color-preview-circle"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+/* Preview Card */
+.preview-card {
+    padding: 1.5rem;
+    border: 2px dashed #dee2e6;
+    border-radius: 0.5rem;
+    background-color: #f8f9fa;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Preview Icon */
+.preview-icon {
+    font-size: 3rem;
+    display: block;
+    text-align: center;
+}
+
+/* Color Preview Circle */
+.color-preview-circle {
+    width: 50px;
+    height: 50px;
+    background-color: #007bff;
+    border-radius: 50%;
+    margin: 0 auto;
+    border: 3px solid #ffffff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Form enhancements */
+.form-control:focus,
+.form-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .preview-icon {
+        font-size: 2.5rem;
+    }
+    
+    .preview-card {
+        padding: 1rem;
+        min-height: 150px;
+    }
+    
+    .color-preview-circle {
+        width: 40px;
+        height: 40px;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Elementos do formulário
+    const nameInput = document.getElementById('name');
+    const typeSelect = document.getElementById('transaction_type');
+    const iconInput = document.getElementById('icon');
+    const colorInput = document.getElementById('color');
+    
+    // Elementos do preview
+    const namePreview = document.getElementById('namePreview');
+    const typePreview = document.getElementById('typePreview');
+    const iconPreview = document.getElementById('iconPreview');
+    const colorPreview = document.getElementById('colorPreview');
+
+    // Função para atualizar preview
+    function updatePreview() {
+        // Atualizar nome
+        if (nameInput && namePreview) {
+            const name = nameInput.value.trim() || 'Nome da Categoria';
+            namePreview.textContent = name;
+        }
+        
+        // Atualizar ícone
+        if (iconInput && iconPreview) {
+            const icon = iconInput.value || '💰';
+            iconPreview.textContent = icon;
+        }
+        
+        // Atualizar cor
+        if (colorInput && colorPreview) {
+            const color = colorInput.value;
+            colorPreview.style.backgroundColor = color;
+        }
+        
+        // Atualizar tipo
+        if (typeSelect && typePreview) {
+            const type = typeSelect.value;
+            if (type === 'receita') {
+                typePreview.textContent = '📈 Receita';
+                typePreview.className = 'badge bg-success';
+            } else if (type === 'despesa') {
+                typePreview.textContent = '📉 Despesa';
+                typePreview.className = 'badge bg-danger';
+            } else {
+                typePreview.textContent = 'Selecione o tipo';
+                typePreview.className = 'badge bg-secondary';
+            }
+        }
+    }
+
+    // Event listeners
+    if (nameInput) {
+        nameInput.addEventListener('input', updatePreview);
+    }
+    if (typeSelect) {
+        typeSelect.addEventListener('change', updatePreview);
+    }
+    if (iconInput) {
+        iconInput.addEventListener('input', updatePreview);
+    }
+    if (colorInput) {
+        colorInput.addEventListener('input', updatePreview);
+    }
+
+    // Definir cor inicial do preview
+    if (colorPreview) {
+        const initialColor = '{{ category.color if category else "#007bff" }}';
+        colorPreview.style.backgroundColor = initialColor;
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Login - COINctrl{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+{% endblock %}
+
+{% block content %}
+    <h1 class="logo">Cointrl</h1>
+
+    <!-- Mensagens flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'error' if category == 'error' else category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST" class="login-form">
+        <input type="email" name="email" placeholder="digite seu e-mail" required>
+        <input type="password" name="password" placeholder="digite sua senha" required>
+
+        <div class="form-footer">
+            <a href="#">esqueceu sua senha?</a>
+            <button type="submit" class="btn btn-primary">entrar</button>
+        </div>
+    </form>
+
+    <a href="{{ url_for('auth.google_login') }}" class="btn btn-google">
+        <span class="google-icon">G</span>
+        Faça login usando sua conta Google
+    </a>
+
+    <div class="link">
+        <p>Não tem conta? <a href="{{ url_for('auth.register') }}">Cadastre-se aqui</a></p>
+    </div>
+{% endblock %}
